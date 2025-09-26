@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 from typing import Any, Dict, List, Optional
+import json
+import base64
 
 import gspread
 from google.oauth2.service_account import Credentials
@@ -12,15 +14,29 @@ SHEET_URL = "https://docs.google.com/spreadsheets/d/1SbK_vKUJV7dTzDPmxmlEM-7MXBo
 
 def get_client() -> gspread.Client:
     creds_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    if not creds_path or not os.path.exists(creds_path):
-        raise RuntimeError(
-            "GOOGLE_APPLICATION_CREDENTIALS env var not set or file not found."
-        )
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
     ]
-    credentials = Credentials.from_service_account_file(creds_path, scopes=scopes)
+    credentials: Credentials
+    # 1) File path (local dev)
+    if creds_path and os.path.exists(creds_path):
+        credentials = Credentials.from_service_account_file(creds_path, scopes=scopes)
+    else:
+        # 2) Inline JSON (for serverless envs like Vercel)
+        raw_json = os.getenv("GOOGLE_CREDENTIALS_JSON") or os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+        b64_json = os.getenv("GOOGLE_CREDENTIALS_BASE64")
+        if raw_json:
+            info = json.loads(raw_json)
+            credentials = Credentials.from_service_account_info(info, scopes=scopes)
+        elif b64_json:
+            decoded = base64.b64decode(b64_json).decode("utf-8")
+            info = json.loads(decoded)
+            credentials = Credentials.from_service_account_info(info, scopes=scopes)
+        else:
+            raise RuntimeError(
+                "GOOGLE_APPLICATION_CREDENTIALS not found and no GOOGLE_CREDENTIALS_JSON/BASE64 provided."
+            )
     return gspread.authorize(credentials)
 
 
