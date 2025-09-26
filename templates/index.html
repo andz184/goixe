@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>BillXe - Xe</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #ddd; padding: 8px; }
+      th { background: #f2f2f2; }
+      a.button { padding: 6px 10px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>Danh sách xe</h1>
+    <p>
+      <a class="button" href="/xe/new">Thêm xe</a>
+      <a class="button" href="/unassigned">Đơn chưa xếp</a>
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>NgayXuat</th>
+          <th>TrangThai</th>
+          <th>NgayDuKien</th>
+          <th>Biển KS</th>
+          <th>Lái xe</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in xe_rows %}
+        <tr>
+          <td>{{ r['ID'] }}</td>
+          <td>{{ r['NgayXuat'] }}</td>
+          <td>{{ r['TrangThai'] }}</td>
+          <td>{{ r['NgayDuKien'] }}</td>
+          <td>{{ r['Biển kiểm soát'] }}</td>
+          <td>{{ r['Lái xe'] }}</td>
+          <td><a href="/xe/{{ r['ID'] }}">Xem</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+  </html>
+
+

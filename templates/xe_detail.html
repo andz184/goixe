@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Xe {{ xe.id }}</title>
+    <style>
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #ddd; padding: 8px; }
+      th { background: #f2f2f2; }
+    </style>
+  </head>
+  <body>
+    <p><a href="/">← Danh sách xe</a></p>
+    <h1>Xe {{ xe.id }}</h1>
+    <p>Trạng thái: {{ xe.trang_thai }} | Ngày xuất: {{ xe.ngay_xuat }} | Ngày dự kiến: {{ xe.ngay_du_kien }}</p>
+
+    <h2>Bill đã xếp</h2>
+    <table id="xepTable">
+      <thead>
+        <tr><th>STT</th><th>Bill</th><th>Số lượng</th><th>Ngày dự kiến</th></tr>
+      </thead>
+      <tbody id="xepBody">
+        {% for r in items %}
+        <tr>
+          <td>{{ r['STT'] }}</td>
+          <td>{{ r['Bill'] }}</td>
+          <td>{{ r['SoLuong'] }}</td>
+          <td>{{ r['NgayDuKien'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Thêm bill lên xe</h2>
+    <div>
+      <label>Bill ID:</label>
+      <input id="bill_id" />
+      <label>Số lượng:</label>
+      <input id="so_luong" type="number" step="0.01" />
+      <label>STT:</label>
+      <input id="stt" type="number" value="1" />
+      <button onclick="addXep()">Thêm</button>
+      <span id="msg"></span>
+    </div>
+    <script>
+      async function addXep(){
+        const body = {
+          xe_id: "{{ xe.id }}",
+          bill_id: document.getElementById('bill_id').value,
+          so_luong: document.getElementById('so_luong').value,
+          stt: document.getElementById('stt').value,
+        };
+        const res = await fetch('/xep/add', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+        const json = await res.json();
+        const msg = document.getElementById('msg');
+        if(json && json.ok){ 
+          msg.textContent = 'Đã lưu vào sheet'; 
+          // Add new row to table without reload
+          const tbody = document.getElementById('xepBody');
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${body.stt}</td><td>${body.bill_id}</td><td>${body.so_luong}</td><td></td>`;
+          tbody.appendChild(row);
+          // Clear form
+          document.getElementById('bill_id').value = '';
+          document.getElementById('so_luong').value = '';
+          document.getElementById('stt').value = '1';
+        }
+        else { msg.textContent = 'Lỗi lưu'; }
+      }
+    </script>
+  </body>
+  </html>
+
+

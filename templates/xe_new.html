@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tạo xe</title>
+  </head>
+  <body>
+    <h1>Tạo xe</h1>
+    <div>
+      <div>
+        <label>Mã xe (ID):</label>
+        <input id="code" required />
+      </div>
+      <div>
+        <label>Ngày xuất (YYYY-MM-DD):</label>
+        <input id="ngay_xuat" />
+      </div>
+      <div>
+        <label>Ghi chú:</label>
+        <input id="ghi_chu" />
+      </div>
+      <hr>
+      <div>
+        <label>Tên nhà cung cấp:</label>
+        <input id="ten_ncc" />
+      </div>
+      <div>
+        <label>Trạng thái thanh toán:</label>
+        <input id="tt_thanh_toan" />
+      </div>
+      <div>
+        <label>Biển kiểm soát:</label>
+        <input id="bien_ks" />
+      </div>
+      <div>
+        <label>Lái xe:</label>
+        <input id="lai_xe" />
+      </div>
+      <div>
+        <label>SBT lái xe:</label>
+        <input id="sbt_lai_xe" />
+      </div>
+      <div>
+        <label>Ghi chú khác:</label>
+        <input id="ghi_chu_khac" />
+      </div>
+      <button onclick="createXe()">Lưu</button>
+      <a href="/">Hủy</a>
+      <span id="msg"></span>
+    </div>
+    <script>
+      async function createXe(){
+        const body = {
+          code: document.getElementById('code').value,
+          ngay_xuat: document.getElementById('ngay_xuat').value,
+          ghi_chu: document.getElementById('ghi_chu').value,
+          ten_ncc: document.getElementById('ten_ncc').value,
+          tt_thanh_toan: document.getElementById('tt_thanh_toan').value,
+          bien_ks: document.getElementById('bien_ks').value,
+          lai_xe: document.getElementById('lai_xe').value,
+          sbt_lai_xe: document.getElementById('sbt_lai_xe').value,
+          ghi_chu_khac: document.getElementById('ghi_chu_khac').value,
+        };
+        const res = await fetch('/xe/create', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+        const json = await res.json();
+        const msg = document.getElementById('msg');
+        if(json && json.ok){ 
+          msg.textContent = 'Đã lưu vào sheet'; 
+          setTimeout(()=>{ window.location.href = `/xe/${json.xe_id}`; }, 1000);
+        }
+        else { msg.textContent = 'Lỗi lưu'; }
+      }
+    </script>
+  </body>
+  </html>
+
+

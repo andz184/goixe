@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Danh sách Bill</title>
+    <style>
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #ddd; padding: 8px; }
+      th { background: #f2f2f2; }
+      input[type=text], input[type=number] { width: 100px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="/">← Danh sách xe</a></p>
+    <h1>Danh sách Bill</h1>
+    <div style="margin:8px 0; display:flex; gap:8px; align-items:center;">
+      <label>Trang:</label>
+      <input id="page" type="number" value="1" min="1" style="width:60px;" />
+      <label>Kích thước:</label>
+      <input id="page_size" type="number" value="20" min="1" max="200" style="width:80px;" />
+      <button onclick="loadBills()">Tải</button>
+      <span id="total"></span>
+    </div>
+    <table id="tbl">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <script>
+      async function loadBills() {
+        const page = Number(document.getElementById('page').value)||1;
+        const pageSize = Number(document.getElementById('page_size').value)||20;
+        const res = await fetch(`/api/bills?page=${page}&page_size=${pageSize}`);
+        const json = await res.json();
+        document.getElementById('total').textContent = `Tổng: ${json.total}`;
+        const headers = json.headers;
+        // Build header with extra action columns
+        const thead = document.getElementById('thead');
+        thead.innerHTML = `<tr>${headers.map(h=>`<th>${h}</th>`).join('')}<th>Xếp lên xe</th></tr>`;
+        const tbody = document.getElementById('tbody');
+        tbody.innerHTML = '';
+        for (const b of json.data) {
+          const tds = headers.map(h=>`<td>${b[h] ?? ''}</td>`).join('');
+          const row = document.createElement('tr');
+          row.innerHTML = tds + `<td>
+            Xe:<input name=\"xe_id\" required />
+            SL:<input name=\"so_luong\" type=\"number\" step=\"0.01\" required />
+            STT:<input name=\"stt\" type=\"number\" value=\"1\" />
+            <button onclick=\"assignBill(event,'${b['ID']||''}', this)\">Thêm</button>
+          </td>`;
+          tbody.appendChild(row);
+        }
+      }
+      async function assignBill(e, billId, btn){
+        e.preventDefault();
+        const host = btn.parentElement;
+        const xe = host.querySelector('input[name=\\'xe_id\\']').value;
+        const sl = host.querySelector('input[name=\\'so_luong\\']').value;
+        const stt = host.querySelector('input[name=\\'stt\\']').value;
+        const res = await fetch('/xep/add', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({bill_id:billId, xe_id:xe, so_luong:sl, stt:stt})});
+        const json = await res.json();
+        if(json && json.ok){ btn.textContent='Đã lưu'; setTimeout(()=>{btn.textContent='Thêm';}, 1000); }
+      }
+      loadBills();
+    </script>
+  </body>
+  </html>
+
+
